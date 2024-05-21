@@ -11,6 +11,9 @@ import java.util.Random;
 public class GraphicsPanel extends JPanel implements KeyListener, MouseListener, ActionListener {
     private BufferedImage background;
     private BufferedImage background2;
+
+    private BufferedImage belt;
+
     private Player player;
     private Player updPlayer;
 
@@ -32,10 +35,11 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         try {
             background = ImageIO.read(new File("src/background.png"));
             background2 = ImageIO.read(new File("src/background2.png"));
+            belt = ImageIO.read(new File("src/belt.png"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        player = new Player("src/belt.png", "src/catImages/cat2.png", null);
+        player = new Player("src/catImages/cat4.png", "src/fishImages/fish2.png", null);
         updPlayer = new Player("src/mariofrogleft.png", "src/mariofrogright.png", null);
         tempPlayer = player;
         coins = new ArrayList<>();
@@ -64,11 +68,10 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);  // just do this
-        if (level2) {
-            g.drawImage(background2, 0, 0, null);
-        } else {
-            g.drawImage(background, 0, 0, null);
-        }// the order that things get "painted" matter; we put background down first
+        g.drawImage(background, 0, 0, null);
+        g.drawImage(belt, 540, 810, null);
+        g.drawImage(belt, -10, 810, null);
+        // the order that things get "painted" matter; we put background down first
         g.drawImage(player.getPlayerImage(), player.getxCoord(), player.getyCoord(), null);
 
         // this loop does two things:  it draws each Coin that gets placed with mouse clicks,
