@@ -28,15 +28,15 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     private JButton clearCoins;
     private JButton pause;
 
-    public GraphicsPanel(String name) {
+    public GraphicsPanel() {
         try {
             background = ImageIO.read(new File("src/background.png"));
             background2 = ImageIO.read(new File("src/background2.png"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        player = new Player("src/marioleft.png", "src/marioright.png", name);
-        updPlayer = new Player("src/mariofrogleft.png", "src/mariofrogright.png", name);
+        player = new Player("src/marioleft.png", "src/marioright.png", null);
+        updPlayer = new Player("src/mariofrogleft.png", "src/mariofrogright.png", null);
         tempPlayer = player;
         coins = new ArrayList<>();
         spikedBalls = new ArrayList<>();
