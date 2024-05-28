@@ -7,7 +7,7 @@ public class MainFrame implements Runnable {
     public MainFrame() {
         JFrame frame = new JFrame("Feed The Cats");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1920, 1080); // 540 height of image + 40 for window menu bar
+        frame.setSize(1920, 1080);
         frame.setLocationRelativeTo(null); // auto-centers frame in screen
 
         // create and add panel
