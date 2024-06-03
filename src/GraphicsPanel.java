@@ -15,6 +15,8 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     private BufferedImage cat2Image;
     private BufferedImage cat3Image;
 
+    private BufferedImage fishComb1;
+
     private boolean[] pressedKeys;
     private ArrayList<Coin> coins;
     private ArrayList<Cat> cats;
@@ -40,6 +42,7 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
             cat1Image = ImageIO.read(new File("src/catImages/cat1.png"));
             cat2Image = ImageIO.read(new File("src/catImages/cat2.png"));
             cat3Image = ImageIO.read(new File("src/catImages/cat3.png"));
+            fishComb1 = ImageIO.read(new File("src/fishComb/fishComb3.png"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -47,9 +50,9 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         cats = new ArrayList<>();
         pressedKeys = new boolean[128];
 
-        cats.add(new Cat(200, 400, cat1Image));
-        cats.add(new Cat(800, 400, cat2Image));
-        cats.add(new Cat(1400, 400, cat3Image));
+        cats.add(new Cat(20, 400, cat1Image));
+        cats.add(new Cat(720, 400, cat2Image));
+        cats.add(new Cat(1390, 400, cat3Image));
 
         clearCoins = new JButton("Clear");
         clearCoins.setFocusable(false);
@@ -75,6 +78,7 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         g.drawImage(belt, 540, 810, null);
         g.drawImage(belt, -10, 810, null);
         g.drawImage(belt, 1672, 810, null);
+        g.drawImage(fishComb1,200, 280, null );
 
         // Draw cats
         for (Cat cat : cats) {
