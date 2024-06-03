@@ -10,22 +10,19 @@ import java.util.Random;
 
 public class GraphicsPanel extends JPanel implements KeyListener, MouseListener, ActionListener, MouseMotionListener {
     private BufferedImage background;
-
     private BufferedImage belt;
-
-    private BufferedImage cat1;
-    private BufferedImage cat2;
-    private BufferedImage cat3;
-
+    private BufferedImage cat1Image;
+    private BufferedImage cat2Image;
+    private BufferedImage cat3Image;
 
     private boolean[] pressedKeys;
     private ArrayList<Coin> coins;
+    private ArrayList<Cat> cats;
 
     private Coin draggedCoin;
     private int dragOffsetX;
     private int dragOffsetY;
 
-    private boolean level2;
     private boolean isPaused;
     private boolean gameOver;
     private boolean gameWon;
@@ -33,24 +30,26 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     private JButton clearCoins;
     private JButton pause;
 
-
     private boolean isDragging; // Flag to track if a coin is being dragged
-
-
+    private int score;
 
     public GraphicsPanel() {
         try {
             background = ImageIO.read(new File("src/background.png"));
             belt = ImageIO.read(new File("src/belt.png"));
-            cat1 = ImageIO.read(new File("src/catImages/cat1.png"));
-            cat2 = ImageIO.read(new File("src/catImages/cat2.png"));
-            cat3 = ImageIO.read(new File("src/catImages/cat3.png"));
+            cat1Image = ImageIO.read(new File("src/catImages/cat1.png"));
+            cat2Image = ImageIO.read(new File("src/catImages/cat2.png"));
+            cat3Image = ImageIO.read(new File("src/catImages/cat3.png"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
         coins = new ArrayList<>();
+        cats = new ArrayList<>();
         pressedKeys = new boolean[128];
 
+        cats.add(new Cat(200, 400, cat1Image));
+        cats.add(new Cat(800, 400, cat2Image));
+        cats.add(new Cat(1400, 400, cat3Image));
 
         clearCoins = new JButton("Clear");
         clearCoins.setFocusable(false);
@@ -67,7 +66,6 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         setFocusable(true); // this line of code + one below makes this panel active for keylistener events
         addMouseMotionListener(this);
         requestFocusInWindow(); // see comment above
-
     }
 
     @Override
@@ -77,23 +75,22 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         g.drawImage(belt, 540, 810, null);
         g.drawImage(belt, -10, 810, null);
         g.drawImage(belt, 1672, 810, null);
-        g.drawImage(cat1, 400, 400, null);
-        g.drawImage(cat2, 800, 400, null);
-        g.drawImage(cat3, 1200, 400, null);
 
-        // the order that things get "painted" matter; we put background down first
-
-
-        // this loop does two things:  it draws each Coin that gets placed with mouse clicks,
-        // and it also checks if the player has "intersected" (collided with) the Coin, and if so,
-        // the score goes up and the Coin is removed from the arraylist
-        for (Coin coin : coins) {
-            g.drawImage(coin.getImage(), coin.getxCoord(), coin.getyCoord(), null); // draw Coin
+        // Draw cats
+        for (Cat cat : cats) {
+            g.drawImage(cat.getImage(), cat.getxCoord(), cat.getyCoord(), null);
         }
 
+        // Draw coins
+        for (Coin coin : coins) {
+            g.drawImage(coin.getImage(), coin.getxCoord(), coin.getyCoord(), null);
+        }
 
+        // Draw score
+        g.setFont(new Font("Courier New", Font.BOLD, 36));
+        g.setColor(Color.WHITE);
+        g.drawString("Score: " + score, 20, 50);
 
-        // draw score
         clearCoins.setLocation(20, 80);
         pause.setLocation(20, 110);
 
@@ -108,7 +105,6 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
                 g.drawString("PAUSED", getWidth() / 2 - 100, getHeight() / 2);
             }
         }
-
     }
 
     // ----- KeyListener interface methods -----
@@ -135,6 +131,7 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         // Update the position of the dragged coin
         draggedCoin.setxCoord(e.getX() - dragOffsetX);
         draggedCoin.setyCoord(e.getY() - dragOffsetY);
+        checkCollisions(); // Check for collisions during dragging
         repaint();
     }
 
@@ -163,8 +160,6 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     }  // unimplemented; if you move your mouse while clicking,
     // this method isn't called, so mouseReleased is best
 
-
-
     public void mouseReleased(MouseEvent e) {
         isDragging = false;
         draggedCoin = null;
@@ -176,13 +171,13 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
             int clickX = mouseClickLocation.x;
             int clickY = mouseClickLocation.y;
 
-                // Define the boundaries
+            // Define the boundaries
             int boundaryX = 0;
             int boundaryY = 780;
             int boundaryWidth = 1980;
             int boundaryHeight = 175;
 
-                // Check if the click is within the boundaries
+            // Check if the click is within the boundaries
             if (clickX >= boundaryX && clickX <= (boundaryX + boundaryWidth) && clickY >= boundaryY && clickY <= (boundaryY + boundaryHeight)) {
                 Random random = new Random();
                 if (random.nextInt(4) < 3) { // 75% chance
@@ -201,20 +196,30 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
 
     // ACTIONLISTENER INTERFACE METHODS: used for buttons AND timers!
     public void actionPerformed(ActionEvent e) {
-       if (e.getSource() == clearCoins) {
-
-            level2 = false;
+        if (e.getSource() == clearCoins) {
             coins.clear();
             gameOver = false;
             gameWon = false;
             isPaused = false;
+            score = 0;
             repaint();
         } else if (e.getSource() == pause) {
             isPaused = !isPaused;
-
             repaint();
         }
     }
 
-
+    // Check for collisions between coins and cats
+    private void checkCollisions() {
+        ArrayList<Coin> coinsToRemove = new ArrayList<>();
+        for (Coin coin : coins) {
+            for (Cat cat : cats) {
+                if (cat.getBounds().intersects(coin.coinRect())) {
+                    coinsToRemove.add(coin);
+                    score++;
+                }
+            }
+        }
+        coins.removeAll(coinsToRemove);
+    }
 }
