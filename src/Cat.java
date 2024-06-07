@@ -1,40 +1,40 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class Cat {
+class Cat {
     private int xCoord;
     private int yCoord;
     private BufferedImage image;
+    private FishComb fishComb;
 
-    public Cat(int x, int y, BufferedImage img) {
-        xCoord = x;
-        yCoord = y;
-        image = img;
+    public Cat(int xCoord, int yCoord, BufferedImage image, FishComb fishComb) {
+        this.xCoord = xCoord;
+        this.yCoord = yCoord;
+        this.image = image;
+        this.fishComb = fishComb;
     }
 
     public int getxCoord() {
         return xCoord;
     }
 
-    public void setxCoord(int xCoord) {
-        this.xCoord = xCoord;
-    }
-
     public int getyCoord() {
         return yCoord;
-    }
-
-    public void setyCoord(int yCoord) {
-        this.yCoord = yCoord;
     }
 
     public BufferedImage getImage() {
         return image;
     }
 
+    public FishComb getFishComb() {
+        return fishComb;
+    }
+
+    public void setFishComb(FishComb fishComb) {
+        this.fishComb = fishComb;
+    }
+
     public Rectangle getBounds() {
-        int imageWidth = image.getWidth() - 20; // 10 pixels smaller on each side
-        int imageHeight = image.getHeight() - 20; // 10 pixels smaller on each side
-        return new Rectangle(xCoord + 10, yCoord + 10, imageWidth, imageHeight);
+        return new Rectangle(xCoord, yCoord, image.getWidth(), image.getHeight());
     }
 }
