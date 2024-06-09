@@ -11,10 +11,10 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 
-
-
 public class GraphicsPanel extends JPanel implements KeyListener, MouseListener, ActionListener, MouseMotionListener, Runnable {
     private BufferedImage background;
+
+    private BufferedImage youWin;
     private BufferedImage belt;
     private BufferedImage cat1Image;
     private BufferedImage cat2Image;
@@ -30,7 +30,6 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     private int dragOffsetX;
     private int dragOffsetY;
 
-
     private boolean gameOver;
     private boolean gameWon;
 
@@ -39,17 +38,17 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     private boolean isDragging;
     private int score;
 
-    private int beltOffsetX; //x-coordinate of the conveyor belt
-    private int beltSpeed = 2; //speed of the conveyor belt
+    private int beltOffsetX; // x-coordinate of the conveyor belt
+    private int beltSpeed = 2; // speed of the conveyor belt
 
     private Clip songClip;
     private boolean gameOverMusicPlayed = false;
-
 
     public GraphicsPanel() {
         playBackground();
         try {
             background = ImageIO.read(new File("src/background.png"));
+            youWin = ImageIO.read(new File("src/youwin.png"));
             belt = ImageIO.read(new File("src/belt.png"));
             cat1Image = ImageIO.read(new File("src/catImages/cat1.png"));
             cat2Image = ImageIO.read(new File("src/catImages/cat2.png"));
@@ -82,7 +81,6 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         add(clearCoins);
         clearCoins.addActionListener(this);
 
-
         addKeyListener(this);
         addMouseListener(this);
         setFocusable(true);
@@ -105,12 +103,10 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         super.paintComponent(g);
         g.drawImage(background, 0, 0, null);
 
-
         // Draw the conveyor belt with the current offset
         g.drawImage(belt, beltOffsetX, 810, null);
         g.drawImage(belt, beltOffsetX + belt.getWidth(), 810, null);
         g.drawImage(belt, beltOffsetX + 2 * belt.getWidth(), 810, null);
-
 
         // Draw cats and their fishComb
         for (Cat cat : cats) {
@@ -140,47 +136,45 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
             g.setColor(Color.BLACK);
             g.drawString("GAME OVER", getWidth() / 2 - 590, getHeight() / 2);
         } else if (gameWon) {
-            g.drawString("YOU WIN!", getWidth() / 2 - 150, getHeight() / 2);
+            g.drawImage(youWin, 0, 0, null);
+            clearCoins.setVisible(false);
         }
     }
 
-
-    //sound
-
+    // sound
 
     private void playBackground() {
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/sounds/background.wav").getAbsoluteFile());
             songClip = AudioSystem.getClip();
             songClip.open(audioInputStream);
-            songClip.loop(Clip.LOOP_CONTINUOUSLY);  // song repeats when finished
+            songClip.loop(Clip.LOOP_CONTINUOUSLY); // song repeats when finished
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    public void startBackgroundMusic() {
-        if (!songClip.isRunning()) {
+    private void win() {
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/sounds/win.wav").getAbsoluteFile());
+            songClip = AudioSystem.getClip();
+            songClip.open(audioInputStream);
             songClip.start();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
-    private void playGameOver() {
-        if (!gameOverMusicPlayed) {
-            // Stop background music if it's playing
-            if (songClip != null && songClip.isRunning()) {
-                songClip.stop();
-            }
 
-            try {
-                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/sounds/gameOver.wav").getAbsoluteFile());
-                songClip = AudioSystem.getClip();
-                songClip.open(audioInputStream);
-                songClip.start();
-                gameOverMusicPlayed = true; // Set the flag to true indicating that the music has been played
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
+
+    private void playGameOver() {
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/sounds/gameOver.wav").getAbsoluteFile());
+            songClip = AudioSystem.getClip();
+            songClip.open(audioInputStream);
+            songClip.start();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -217,10 +211,9 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
         }
     }
 
-
     // Implementing the run method for continuous belt movement
     public void run() {
-        while (true) {
+        while (!gameOver && !gameWon) { // Stop the loop if the game is over or won
             try {
                 Thread.sleep(20); // Adjust the delay for animation
             } catch (InterruptedException e) {
@@ -261,7 +254,7 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
 
     // MouseMotionListener interface methods
     public void mouseDragged(MouseEvent e) {
-        if (!gameOver) {
+        if (!gameOver && !gameWon) {
             draggedFish.setxCoord(e.getX() - dragOffsetX);
             draggedFish.setyCoord(e.getY() - dragOffsetY);
             checkCollisions();
@@ -274,7 +267,7 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
 
     // MouseListener interface methods
     public void mousePressed(MouseEvent e) {
-        if (!gameOver) {
+        if (!gameOver && !gameWon) {
             for (Fish fish : this.fish) {
                 if (fish.contains(e.getPoint())) {
                     isDragging = true;
@@ -291,7 +284,7 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (!gameOver) {
+        if (!gameOver && !gameWon) {
             isDragging = false;
             draggedFish = null;
             if (e.getButton() == MouseEvent.BUTTON1) {
@@ -323,7 +316,7 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (!gameOver) {
+        if (!gameOver && !gameWon) {
             if (e.getSource() == clearCoins) {
                 fish.clear();
                 repaint();
@@ -342,13 +335,14 @@ public class GraphicsPanel extends JPanel implements KeyListener, MouseListener,
                         playMeow();
                         coinsToRemove.add(fish);
                         cat.setFishComb(getRandomFishComb());
+                        if (score >= 100) {
+                            gameWon = true;
+                            win();
+                        }
                         break;
                     } else {
                         playGrowl();
                         gameOver = true;
-                        if (songClip != null && songClip.isRunning()) {
-                            songClip.stop();
-                        }
                         playGameOver();
                         return; // Exit the method after playing the game over music
                     }
